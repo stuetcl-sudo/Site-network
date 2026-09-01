@@ -26,8 +26,13 @@ export type CanvasProject = {
   view: { zoom: number; panX: number; panY: number; activeGroup: string };
 };
 
+export function createId(): string {
+  return globalThis.crypto?.randomUUID?.()
+    ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+}
+
 export const emptyProject = (): CanvasProject => ({
-  version: 2, id: crypto.randomUUID(), name: "Nyt område", description: "",
+  version: 2, id: createId(), name: "Nyt område", description: "",
   createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
   background: null, backgroundName: "", backgroundWidth: 1400, backgroundHeight: 900,
   nodes: [], connections: [], groups: [],

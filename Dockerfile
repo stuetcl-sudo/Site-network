@@ -1,5 +1,6 @@
 FROM node:22-alpine AS build
 WORKDIR /app
+RUN apk add --no-cache bash curl coreutils util-linux
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .

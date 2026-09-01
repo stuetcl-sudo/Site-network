@@ -27,7 +27,7 @@ npm run dev
 docker compose up -d --build
 ```
 
-Tjenesten bindes som standard til `127.0.0.1:8092`, så Caddy eller en anden reverse proxy kan stå foran.
+Tjenesten bindes som standard til port `8092`, så den kan testes fra lokalnettet. Ved offentlig adgang bør Caddy eller en anden reverse proxy med adgangskontrol stå foran.
 
 ## Data
 

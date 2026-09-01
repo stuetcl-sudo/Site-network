@@ -10,7 +10,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { CONNECTION_TYPES, DEVICE_TYPES, emptyProject } from "./types";
+import { CONNECTION_TYPES, DEVICE_TYPES, createId, emptyProject } from "./types";
 import type { CanvasProject, Connection, ConnectionType, DeviceNode, DeviceStatus, DeviceType } from "./types";
 import { loadProject, saveProject } from "./storage";
 
@@ -52,14 +52,14 @@ function normalizeImported(raw: unknown): CanvasProject {
   const nodes = Array.isArray(value.nodes) ? value.nodes.map((item) => {
     const node = item as Partial<DeviceNode> & { photos?: Array<string | DeviceNode["photos"][number]> };
     return {
-      id: node.id || crypto.randomUUID(), name: node.name || "Uden navn",
+      id: node.id || createId(), name: node.name || "Uden navn",
       type: DEVICE_TYPES.includes(node.type as DeviceType) ? node.type as DeviceType : "Ukendt",
       status: node.status || "unknown", group: node.group || "", x: Number(node.x) || 300, y: Number(node.y) || 300,
       ip: node.ip || "", mac: node.mac || "", vendor: node.vendor || "", model: node.model || "",
       serial: node.serial || "", location: node.location || "", notes: node.notes || "",
       photos: (node.photos || []).map((photo) => typeof photo === "string"
-        ? { id: crypto.randomUUID(), src: photo, name: "Foto", caption: "", createdAt: new Date().toISOString() }
-        : { ...photo, id: photo.id || crypto.randomUUID(), caption: photo.caption || "" }),
+        ? { id: createId(), src: photo, name: "Foto", caption: "", createdAt: new Date().toISOString() }
+        : { ...photo, id: photo.id || createId(), caption: photo.caption || "" }),
     } satisfies DeviceNode;
   }) : [];
   const legacyLinks = Array.isArray(value.links) ? value.links : [];
@@ -67,7 +67,7 @@ function normalizeImported(raw: unknown): CanvasProject {
   const connections = rawConnections.map((item) => {
     const c = item as Partial<Connection> & { a?: string; b?: string };
     return {
-      id: c.id || crypto.randomUUID(), from: c.from || c.a || "", to: c.to || c.b || "",
+      id: c.id || createId(), from: c.from || c.a || "", to: c.to || c.b || "",
       type: CONNECTION_TYPES.includes(c.type as ConnectionType) ? c.type as ConnectionType : "Ukendt",
       label: c.label || "", length: c.length || "", lengthUnit: c.lengthUnit || "m", measured: c.measured ?? false,
       cableType: c.cableType || "", fromPort: c.fromPort || "", toPort: c.toPort || "", cores: c.cores || "",
@@ -156,7 +156,7 @@ export function SiteCanvas() {
     const rect = wrapRef.current?.getBoundingClientRect();
     const count = project.nodes.filter((node) => node.type === type).length + 1;
     const node: DeviceNode = {
-      id: crypto.randomUUID(), name: `${deviceMeta[type].prefix}-${String(count).padStart(2, "0")}`, type, status: "unknown",
+      id: createId(), name: `${deviceMeta[type].prefix}-${String(count).padStart(2, "0")}`, type, status: "unknown",
       group: project.view.activeGroup === "all" ? "" : project.view.activeGroup,
       x: ((rect?.width || 900) / 2 - project.view.panX) / project.view.zoom - 55 + count * 5,
       y: ((rect?.height || 600) / 2 - project.view.panY) / project.view.zoom - 22 + count * 5,
@@ -170,7 +170,7 @@ export function SiteCanvas() {
     if (connectMode) {
       if (!connectFrom) { setConnectFrom(id); return; }
       if (connectFrom === id) return;
-      const connection: Connection = { id: crypto.randomUUID(), from: connectFrom, to: id, type: "Ethernet", label: "", length: "", lengthUnit: "m", measured: false, cableType: "", fromPort: "", toPort: "", cores: "", status: "unknown", notes: "" };
+      const connection: Connection = { id: createId(), from: connectFrom, to: id, type: "Ethernet", label: "", length: "", lengthUnit: "m", measured: false, cableType: "", fromPort: "", toPort: "", cores: "", status: "unknown", notes: "" };
       change((current) => ({ ...current, connections: [...current.connections, connection] }));
       setSelectedNodeId(null); setSelectedConnectionId(connection.id); setConnectFrom(null); setConnectMode(false); setInspectorOpen(true); return;
     }
@@ -232,7 +232,7 @@ export function SiteCanvas() {
   };
   const onPhotos = async (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []), targetId = selectedNodeId; if (!targetId || !files.length) return;
-    const photos = await Promise.all(files.map(async (file) => ({ id: crypto.randomUUID(), src: await fileAsDataUrl(file), name: file.name, caption: "", createdAt: new Date().toISOString() })));
+    const photos = await Promise.all(files.map(async (file) => ({ id: createId(), src: await fileAsDataUrl(file), name: file.name, caption: "", createdAt: new Date().toISOString() })));
     change((current) => ({ ...current, nodes: current.nodes.map((node) => node.id === targetId ? { ...node, photos: [...node.photos, ...photos] } : node) })); event.target.value = "";
   };
 
